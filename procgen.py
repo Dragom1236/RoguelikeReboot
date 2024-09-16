@@ -1,8 +1,11 @@
 from __future__ import annotations
 import random
+from time import time
+
 import tcod
 from typing import Tuple, Iterator, List
 
+import entity_factories
 import tile_types
 from entity import Entity
 from game_map import GameMap
@@ -53,7 +56,7 @@ class RectPrismRoom:
     @property
     def air_inner(self) -> Tuple[slice, slice, slice]:
         """Return the inner area of this room that represents air as a 2D array index."""
-        return slice(self.z1 + 2, self.z2), slice(self.x1 + 1, self.x2), slice(self.y1 + 1, self.y2)
+        return slice(self.z1 + 2, self.z2 - 1), slice(self.x1 + 1, self.x2), slice(self.y1 + 1, self.y2)
 
 
 def tunnel_between(
@@ -89,6 +92,7 @@ def generate_dungeon(
         map_width: int,
         map_height: int,
         map_depth: int,
+        max_monsters_per_room: int,
         player: Entity,
         chunk_depth: int = 15,
         chunk_bisection_ratio: float = 0,
@@ -118,13 +122,15 @@ def generate_dungeon(
     If max rooms is 50, and there are 5 chunks, it will attempt to generate 10 rooms in each chunk.
 
      """
+    currenttime = time()
+
     if number_of_layers > 0:
         chunk_bisection_ratio = number_of_layers / map_depth
     if chunk_bisection_ratio > 0:
         chunk_depth = int(map_depth * chunk_bisection_ratio)
     if chunk_depth < room_max_size:
         chunk_depth = room_max_size
-    dungeon: GameMap = GameMap(map_width, map_height, map_depth)
+    dungeon: GameMap = GameMap(map_width, map_height, map_depth, entities=[player])
     rooms: List[RectPrismRoom] = []
     chunk_offset = abs(chunk_offset)
     if chunk_offset == 0:
@@ -135,12 +141,12 @@ def generate_dungeon(
                                          range(chunk_offset, map_depth - chunk_offset, chunk_depth + chunk_offset)]
     print("chunks:", chunks)
     for chunk in chunks:
-        if chunk[1]-chunk[0]<chunk_depth-1:
+        if chunk[1] - chunk[0] < chunk_depth - 1:
             continue
         for r in range(max_rooms // (map_depth // chunk_depth)):
             room_width = random.randint(room_min_size, room_max_size)
             room_height = random.randint(room_min_size, room_max_size)
-            room_depth = min(random.randint(room_min_size, room_max_size), chunk[1]-chunk[0])
+            room_depth = min(random.randint(room_min_size, room_max_size), chunk[1] - chunk[0])
 
             x = random.randint(0, dungeon.width - room_width - 1)
             y = random.randint(0, dungeon.height - room_height - 1)
@@ -156,6 +162,7 @@ def generate_dungeon(
 
             # Dig out this rooms inner area.
             dungeon.tiles[new_room.inner] = tile_types.floor
+            dungeon.tiles[new_room.air_inner] = tile_types.air
 
             if len(rooms) == 0:
                 # The first room, where the player starts.
@@ -163,10 +170,42 @@ def generate_dungeon(
             else:  # All rooms after the first.
                 # Dig out a tunnel between this room and the previous one.
                 join_rooms(dungeon, rooms[-1], new_room)
+
+            place_entities(new_room, dungeon, max_monsters_per_room)
             # Finally, append the new room to the list.
             rooms.append(new_room)
             print("x", x, "y", y, "z", z)
             print("width", room_width, "height", room_height, "depth", room_depth)
     dungeon.view_depth = player.z
     print("We got this many rooms:", len(rooms))
+    print("World gen took:", time() - currenttime)
     return dungeon
+
+
+def place_entities(
+        room: RectPrismRoom, dungeon: GameMap, maximum_monsters: int,
+) -> None:
+    number_of_monsters = random.randint(0, maximum_monsters)
+
+    for i in range(number_of_monsters):
+        x = random.randint(room.x1 + 1, room.x2 - 1)
+        y = random.randint(room.y1 + 1, room.y2 - 1)
+        if random.random() < 0.75:
+            z = room.floor_center[0]
+        else:
+            z = random.randint(room.z1 + 1, room.z2 - 1)
+        if not any(entity.x == x and entity.y == y and entity.z == z for entity in dungeon.entities):
+            if not dungeon.tiles["grounded"][z, x, y]:
+                if random.random() < 0.5:
+                    entity_factories.bat.spawn(dungeon, x, y, z)
+                else:
+                    entity_factories.imp.spawn(dungeon, x, y, z)
+            else:
+                if random.random() < 0.3:
+                    entity_factories.orc.spawn(dungeon, x, y, z)
+                elif random.random() < 0.5:
+                    entity_factories.slime.spawn(dungeon, x, y, z)
+                elif random.random() < 0.8:
+                    entity_factories.goblin.spawn(dungeon, x, y, z)
+                else:
+                    entity_factories.troll.spawn(dungeon, x, y, z)

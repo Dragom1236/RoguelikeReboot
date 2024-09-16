@@ -4,13 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2fda8db1-c6c6-4d69-ac8b-a0c0329bf255" name="Changes" comment="About to start making the 3D dungeon">
+    <list default="true" id="2fda8db1-c6c6-4d69-ac8b-a0c0329bf255" name="Changes" comment="3D dungeon world generation exists. Field of view is implemented, though needs to be perfected. Temporary way of confirming the world is 3D exists.">
+      <change afterPath="$PROJECT_DIR$/Algorithm.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/entity_factories.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/engine.py" beforeDir="false" afterPath="$PROJECT_DIR$/engine.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/entity.py" beforeDir="false" afterPath="$PROJECT_DIR$/entity.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/game_map.py" beforeDir="false" afterPath="$PROJECT_DIR$/game_map.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/input_handlers.py" beforeDir="false" afterPath="$PROJECT_DIR$/input_handlers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/procgen.py" beforeDir="false" afterPath="$PROJECT_DIR$/procgen.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tile_types.py" beforeDir="false" afterPath="$PROJECT_DIR$/tile_types.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,7 +83,15 @@
       <option name="project" value="LOCAL" />
       <updated>1725965598666</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="3D dungeon world generation exists. Field of view is implemented, though needs to be perfected. Temporary way of confirming the world is 3D exists.">
+      <option name="closed" value="true" />
+      <created>1726407223000</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1726407223000</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -96,6 +107,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="About to start making the 3D dungeon" />
-    <option name="LAST_COMMIT_MESSAGE" value="About to start making the 3D dungeon" />
+    <MESSAGE value="3D dungeon world generation exists. Field of view is implemented, though needs to be perfected. Temporary way of confirming the world is 3D exists." />
+    <option name="LAST_COMMIT_MESSAGE" value="3D dungeon world generation exists. Field of view is implemented, though needs to be perfected. Temporary way of confirming the world is 3D exists." />
   </component>
 </project>

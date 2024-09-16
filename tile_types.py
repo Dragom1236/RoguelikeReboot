@@ -16,6 +16,7 @@ tile_dt = np.dtype(
     [
         ("walkable", bool),  # True if this tile can be walked over.
         ("transparent", bool),  # True if this tile doesn't block FOV.
+        ("grounded", bool),  # False if the tile is not a solid(air, water)
         ("dark", graphic_dt),  # Graphics for when this tile is not in FOV.
         ("light", graphic_dt),  # Graphics for when the tile is in FOV.
     ]
@@ -26,11 +27,12 @@ def new_tile(
         *,  # Enforce the use of keywords, so that parameter order doesn't matter.
         walkable: int,
         transparent: int,
+        grounded: int,
         dark: Tuple[int, Tuple[int, int, int], Tuple[int, int, int]],
         light: Tuple[int, Tuple[int, int, int], Tuple[int, int, int]],
 ) -> np.ndarray:
     """Helper function for defining individual tile types """
-    return np.array((walkable, transparent, dark, light), dtype=tile_dt)
+    return np.array((walkable, transparent, grounded, dark, light), dtype=tile_dt)
 
 
 # SHROUD represents unexplored, unseen tiles
@@ -39,19 +41,30 @@ SHROUD = np.array((ord(" "), (255, 255, 255), (0, 0, 0)), dtype=graphic_dt)
 floor = new_tile(
     walkable=True,
     transparent=True,
+    grounded=True,
     dark=(ord(" "), (255, 255, 255), (50, 50, 150)),
     light=(ord(" "), (255, 255, 255), (200, 180, 50)),
 )
 wall = new_tile(
     walkable=False,
     transparent=False,
+    grounded=True,
     dark=(ord(" "), (255, 255, 255), (0, 0, 100)),
     light=(ord(" "), (255, 255, 255), (130, 110, 50)),
+)
+
+air = new_tile(
+    walkable=True,
+    transparent=True,
+    grounded=False,
+    dark=(ord(" "), (255, 255, 255), (30, 30, 120)),
+    light=(ord(" "), (255, 255, 255), (230, 210, 80)),
 )
 
 down_stairs = new_tile(
     walkable=True,
     transparent=True,
+    grounded=True,
     dark=(ord(">"), (0, 0, 100), (50, 50, 150)),
     light=(ord(">"), (255, 255, 255), (200, 180, 50)),
 )
@@ -59,6 +72,7 @@ down_stairs = new_tile(
 up_stairs = new_tile(
     walkable=True,
     transparent=True,
+    grounded=True,
     dark=(ord("<"), (0, 0, 100), (50, 50, 150)),
     light=(ord("<"), (255, 255, 255), (200, 180, 50)),
 )

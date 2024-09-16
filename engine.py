@@ -1,5 +1,5 @@
 from typing import Set, Iterable, Any
-
+from time import time
 from tcod.context import Context
 from tcod.console import Console
 from tcod.map import compute_fov
@@ -12,8 +12,8 @@ from input_handlers import EventHandler
 
 
 class Engine:
-    def __init__(self, entities: Set[Entity], event_handler: EventHandler, game_map: GameMap, player: Entity):
-        self.entities = entities
+
+    def __init__(self, event_handler: EventHandler, game_map: GameMap, player: Entity):
         self.event_handler = event_handler
         self.player = player
         self.game_map = game_map
@@ -37,12 +37,14 @@ class Engine:
         # If a tile is "visible" it should be added to "explored".
         self.game_map.explored |= self.game_map.visible
 
-    def compute_3d_fov(self, radius=15) -> None:
+    def compute_3d_fov(self, radius=8) -> None:
+        currenttime = time()
+        self.game_map.visible[:] = False
         for i in range(radius):
             self.game_map.visible[min(self.player.z + i, self.game_map.depth - 1),:] = compute_fov(
                 self.game_map.tiles["transparent"][min(self.player.z + i, self.game_map.depth - 1)],
                 (self.player.x, self.player.y),
-                radius=radius-i,
+                radius=radius,
             )
             if self.game_map.tiles[self.player.z+i,self.player.x,self.player.y] == tile_types.wall:
                 break
@@ -50,7 +52,7 @@ class Engine:
             self.game_map.visible[max(self.player.z - i, 0),:] = compute_fov(
                 self.game_map.tiles["transparent"][max(self.player.z - i, 0)],
                 (self.player.x, self.player.y),
-                radius=radius-i,
+                radius=radius,
             )
             if self.game_map.tiles[self.player.z-i,self.player.x,self.player.y] == tile_types.wall:
                 break
@@ -59,13 +61,10 @@ class Engine:
             (self.player.x, self.player.y),
             radius=radius,
         )
+        print("3D FOV for player took:",time()-currenttime)
 
     def render(self, console: Console, context: Context) -> None:
         self.game_map.render(console)
-        for entity in self.entities:
-            # Only print entities that are in the FOV
-            if self.game_map.visible[entity.z,entity.x, entity.y] and entity.z==self.game_map.view_depth:
-                console.print(entity.x, entity.y, entity.char, fg=entity.color)
 
         context.present(console)
 

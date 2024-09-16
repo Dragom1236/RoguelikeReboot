@@ -25,7 +25,7 @@ class EscapeAction(Action):
         raise SystemExit()
 
 
-class MovementAction(Action):
+class ActionWithDirection(Action):
     def __init__(self, dx: int, dy: int, dz: int):
         super().__init__()
 
@@ -34,13 +34,46 @@ class MovementAction(Action):
         self.dz = dz
 
     def perform(self, engine: Engine, entity: Entity) -> None:
+        raise NotImplementedError()
+
+
+class MovementAction(ActionWithDirection):
+
+    def perform(self, engine: Engine, entity: Entity) -> None:
         dest_x = entity.x + self.dx
         dest_y = entity.y + self.dy
         dest_z = entity.z + self.dz
 
         if not engine.game_map.in_bounds(dest_x, dest_y, dest_z):
             return  # Destination is out of bounds.
-        if not engine.game_map.tiles["walkable"][dest_z,dest_x, dest_y]:
+        if not engine.game_map.tiles["walkable"][dest_z, dest_x, dest_y]:
             return  # Destination is blocked by a tile.
+        if engine.game_map.get_blocking_entity_at_location(dest_x, dest_y,dest_z):
+            return  # Destination is blocked by an entity.
 
         entity.move(self.dx, self.dy, self.dz)
+
+
+class MeleeAction(ActionWithDirection):
+    def perform(self, engine: Engine, entity: Entity) -> None:
+        dest_x = entity.x + self.dx
+        dest_y = entity.y + self.dy
+        dest_z = entity.z + self.dz
+        target = engine.game_map.get_blocking_entity_at_location(dest_x, dest_y,dest_z)
+        if not target:
+            return  # No entity to attack.
+
+        print(f"You kick the {target.name}, much to its annoyance!")
+
+
+class BumpAction(ActionWithDirection):
+    def perform(self, engine: Engine, entity: Entity) -> None:
+        dest_x = entity.x + self.dx
+        dest_y = entity.y + self.dy
+        dest_z = entity.z + self.dz
+
+        if engine.game_map.get_blocking_entity_at_location(dest_x, dest_y, dest_z):
+            return MeleeAction(self.dx, self.dy,self.dz).perform(engine, entity)
+
+        else:
+            return MovementAction(self.dx, self.dy, self.dz).perform(engine, entity)
